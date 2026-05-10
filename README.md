@@ -1,8 +1,8 @@
 Copyright (C) 2026 Eugene Brodsky. Licensed under the [GNU Affero General Public License v3.0](LICENSE).
 
-# Condo Director's Financial Assistant
+# MakeItMakeSense
 
-*A Claude Code skill that synthesizes your corporation's financial documents into a board-ready report.*
+*Condo Corporation Financial Analyst — a Claude Code skill that synthesizes your corporation's financial documents into a board-ready report.*
 
 ## Why I made this
 
