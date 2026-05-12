@@ -547,126 +547,34 @@ single source of truth for your corporation's particulars.
 **8b-ii. Output filename.** Same base name as the `.md` file, with `.html` extension:
 `Reports/YYYY-MM-DD-HHMM[_focus-tag]_Financial-Position-Report.html`
 
-**8b-iii. Write a self-contained HTML file** matching the design system below. All fonts and CSS must be inline in the file — no external stylesheet references other than the Google Fonts `<link>` tags.
+**8b-iii. Run the render script.**
 
-### HTML design system
+Locate and invoke `scripts/render_html.py`, which is bundled with this skill:
 
-**CSS variables** — copy these into the `<style>` block verbatim:
+```bash
+RENDER_SCRIPT=$(find ~/.claude/skills/condo-corp-financial-analyst/scripts \
+  -name render_html.py 2>/dev/null | head -1)
 
-```css
-:root {
-  --paper: #f3efe6;
-  --paper-2: #ece6d8;
-  --ink: #1b1a17;
-  --ink-2: #3a3833;
-  --ink-3: #6f6a60;
-  --rule: #cfc6b3;
-  --accent: #2f5740;
-  --flag-high: #a8412b;
-  --flag-pos: #3f6b46;
-  --flag-med: #a07a26;
-}
+if [ -z "$RENDER_SCRIPT" ]; then
+  # Fallback: search relative to the working directory
+  RENDER_SCRIPT=$(find . -path "*/condo-corp-financial-analyst/scripts/render_html.py" 2>/dev/null | head -1)
+fi
+
+if [ -z "$RENDER_SCRIPT" ]; then
+  echo "Render script not found — check skill installation path"
+  exit 1
+fi
+
+PYTHON=$(command -v python3 || command -v python)
+if [ -z "$PYTHON" ]; then
+  echo "Python not found. Install Python 3 (python.org) and re-run, or open the .md file and export to PDF from your browser."
+  exit 1
+fi
+
+"$PYTHON" "$RENDER_SCRIPT" "Reports/FILENAME.md"
 ```
 
-**Google Fonts** — include in `<head>`:
-
-```html
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
-```
-
-**Full CSS** — include in the `<style>` block:
-
-```css
-* { box-sizing: border-box; }
-html, body { margin: 0; padding: 0; background: var(--paper); color: var(--ink); font-family: "IBM Plex Sans", system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
-.page { max-width: 900px; margin: 0 auto; padding: 48px 56px 96px; }
-@media (max-width: 700px) { .page { padding: 28px 22px 64px; } }
-
-.report { background: #fbf8f0; border: 1px solid var(--rule); border-radius: 6px; padding: 32px 36px; box-shadow: 0 1px 0 rgba(0,0,0,.02), 0 24px 48px -32px rgba(27,26,23,.18); position: relative; overflow: hidden; }
-.report::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 3px; background: var(--accent); }
-
-.rhead { display: flex; justify-content: space-between; align-items: baseline; border-bottom: 1px solid var(--rule); padding-bottom: 16px; margin-bottom: 22px; }
-.rhead h1 { font-family: "Instrument Serif", serif; font-weight: 400; font-size: 32px; letter-spacing: -.01em; margin: 0; color: var(--ink); }
-.rhead .stamp { font-family: "IBM Plex Mono", monospace; font-size: 11px; letter-spacing: .1em; color: var(--ink-3); text-transform: uppercase; white-space: nowrap; }
-
-.meta-block { font-family: "IBM Plex Mono", monospace; font-size: 11px; color: var(--ink-3); line-height: 1.7; margin-bottom: 24px; padding-bottom: 16px; border-bottom: 1px solid var(--rule); }
-.meta-block .k { color: var(--ink-3); letter-spacing: .08em; text-transform: uppercase; font-size: 10px; }
-.meta-block .v { color: var(--ink-2); }
-
-h5 { font-family: "IBM Plex Sans", sans-serif; font-weight: 600; font-size: 11px; letter-spacing: .14em; text-transform: uppercase; color: var(--ink); margin: 24px 0 10px; }
-
-.row { display: flex; justify-content: space-between; align-items: baseline; padding: 5px 0; border-bottom: 1px dotted var(--rule); font-family: "IBM Plex Mono", monospace; font-size: 13px; }
-.row .lbl { color: var(--ink-2); }
-.row .val { color: var(--ink); font-variant-numeric: tabular-nums; }
-.row .val.neg { color: var(--flag-high); }
-.row .val.pos { color: var(--flag-pos); }
-
-.flag { display: flex; gap: 12px; align-items: flex-start; padding: 10px 0; border-bottom: 1px dotted var(--rule); }
-.flag:last-child { border-bottom: 0; }
-.flag .tag { font-family: "IBM Plex Mono", monospace; font-size: 9.5px; letter-spacing: .1em; padding: 3px 8px; border-radius: 3px; text-transform: uppercase; color: #fff; flex-shrink: 0; margin-top: 2px; font-weight: 500; }
-.flag .tag.high { background: var(--flag-high); }
-.flag .tag.med { background: var(--flag-med); }
-.flag .tag.pos { background: var(--flag-pos); }
-.flag .txt { font-family: "IBM Plex Mono", monospace; font-size: 12px; color: var(--ink-2); line-height: 1.55; }
-.flag .txt em { color: var(--ink-3); font-style: normal; font-size: 10.5px; display: block; margin-top: 3px; }
-
-.scorecard { width: 100%; border-collapse: collapse; font-family: "IBM Plex Mono", monospace; font-size: 12px; margin: 8px 0 16px; }
-.scorecard th { font-family: "IBM Plex Sans", sans-serif; font-weight: 600; font-size: 10px; letter-spacing: .12em; text-transform: uppercase; color: var(--ink-3); padding: 6px 8px; text-align: right; border-bottom: 1px solid var(--rule); }
-.scorecard th:first-child { text-align: left; }
-.scorecard td { padding: 5px 8px; text-align: right; border-bottom: 1px dotted var(--rule); color: var(--ink-2); font-variant-numeric: tabular-nums; }
-.scorecard td.metric { text-align: left; }
-.scorecard tr:last-child td { border-bottom: none; }
-
-.data-table { width: 100%; border-collapse: collapse; font-size: 13px; margin: 8px 0 16px; }
-.data-table th { font-family: "IBM Plex Sans", sans-serif; font-weight: 600; font-size: 10.5px; letter-spacing: .1em; text-transform: uppercase; color: var(--ink-3); padding: 6px 8px 6px 0; border-bottom: 1px solid var(--rule); text-align: left; }
-.data-table td { padding: 5px 8px 5px 0; border-bottom: 1px dotted var(--rule); color: var(--ink-2); vertical-align: top; }
-
-.prose { font-size: 14px; line-height: 1.6; color: var(--ink-2); margin: 8px 0 16px; }
-.prose strong { color: var(--ink); }
-
-.section-divider { border: none; border-top: 1px solid var(--rule); margin: 24px 0; }
-
-footer.page-footer { margin-top: 32px; font-family: "IBM Plex Mono", monospace; font-size: 11px; color: var(--ink-3); letter-spacing: .06em; text-align: center; }
-```
-
-### Section mapping (Markdown → HTML)
-
-| Markdown section | HTML treatment |
-|---|---|
-| Report header metadata (`**Date:**`, `**Sources:**`, etc.) | `.meta-block` rendered above the `.rhead` |
-| Corp name + "Financial Position Report" | `.rhead`: `<h1>Financial Briefing</h1>` left, `<span class="stamp">Corp · YYYY-MM</span>` right |
-| `## 1. Operating Fund` | `<h5>Operating Fund — YTD vs. Budget</h5>` + `.row` items |
-| `## 2. Reserve Fund` | `<h5>Reserve Fund</h5>` + `.row` items |
-| `## 3. Reserve Fund Study` | `<h5>Reserve Fund Study</h5>` + `.prose` + `.data-table` |
-| `## 4. Notable Variances` | `<h5>Notable Variances</h5>` + `.data-table` (positive and negative sub-sections) |
-| `## 5. Summary Scorecard` | `<h5>Summary Scorecard</h5>` + `.scorecard` table |
-| `## 6. Priority Flags` | `<h5>Priority Flags</h5>` + `.flag` items (map emoji → tag class: 🔴→`high`, 🟡→`med`, 🟢→`pos`) |
-| `## 7. Overall Assessment` | `<h5>Overall Assessment</h5>` + `.data-table` |
-| `## 8. Changes Since Last Report` | `<h5>Changes Since Last Report</h5>` + `.prose` or `.flag` items |
-| `## 9. Forward-Looking` | `<h5>Forward-Looking · Not Yet in Statements</h5>` + `.flag` items |
-| Footer line (*Report generated…*) | `<footer class="page-footer">` |
-
-**Flag rendering detail:**
-```html
-<div class="flag">
-  <span class="tag high">HIGH</span>
-  <span class="txt">Elevator maintenance 41% over budget YTD — three call-outs in October.<br>
-    <em>variance.pdf · p.4</em>
-  </span>
-</div>
-```
-Source citations (italic text in the Markdown, e.g. `*variance.pdf · p.4*`) → `<em>` inside `.flag .txt`.
-
-**Data row rendering detail:**
-```html
-<div class="row">
-  <span class="lbl">Net income</span>
-  <span class="val pos">+ $ 88,284</span>
-</div>
-```
-Add class `pos` for positive/favorable figures, `neg` for negative/unfavorable. No class for neutral.
+This produces `Reports/FILENAME.html` in under a second. Do not write HTML manually.
 
 ### 8b-iv. PDF generation (format = `pdf` only)
 
