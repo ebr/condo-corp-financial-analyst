@@ -594,16 +594,17 @@ wkhtmltopdf "Reports/FILENAME.html" "Reports/FILENAME.pdf" 2>/dev/null && echo O
 The `.pdf` file goes to `Reports/` with the same base name and `.pdf` extension.
 
 If all three commands fail, tell the user:
-> "PDF tools (Chromium, Chrome, wkhtmltopdf) were not found on this system. The HTML report is at `Reports/[filename].html`. To save as PDF: open that file in your browser → File → Print → Save as PDF."
+> "PDF tools (Chromium, Chrome, wkhtmltopdf) were not found on this system. [Open the HTML report](file:///ABSOLUTE_PATH/Reports/[filename].html) and use File → Print → Save as PDF."
 
 ### 8b-v. Update the inline summary
 
-Append to the Step 8 summary block:
+Append to the Step 8 summary block. Use `pwd` to get the absolute path and construct `file://` links so the user can click directly to open the files:
+
 ```
 **Files saved:**
   Reports/[filename].md
-  Reports/[filename].html       ← always generated for html or pdf format
-  Reports/[filename].pdf        ← if pdf format and a PDF tool was found
+  [Reports/[filename].html](file:///ABSOLUTE_PATH/Reports/[filename].html)
+  [Reports/[filename].pdf](file:///ABSOLUTE_PATH/Reports/[filename].pdf)   ← if pdf format and a PDF tool was found
 ```
 
 ---
