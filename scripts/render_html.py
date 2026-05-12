@@ -252,10 +252,18 @@ def render_mixed(content: str) -> str:
 def render_section_body(sec_num: str, content: str) -> str:
     if sec_num == "5":
         lines = content.split("\n")
-        tbl = [l for l in lines if l.strip().startswith("|")]
-        if tbl:
-            headers, rows = parse_table(tbl)
-            return render_table(headers, rows, "scorecard")
+        # Only the first contiguous table block is the scorecard
+        first = next((i for i, l in enumerate(lines) if l.strip().startswith("|")), None)
+        if first is not None:
+            i = first
+            tbl_lines = []
+            while i < len(lines) and lines[i].strip().startswith("|"):
+                tbl_lines.append(lines[i])
+                i += 1
+            headers, rows = parse_table(tbl_lines)
+            scorecard = render_table(headers, rows, "scorecard") if headers and rows else ""
+            remainder = "\n".join(lines[i:])
+            return scorecard + (render_mixed(remainder) if remainder.strip() else "")
         return render_prose(content)
 
     if sec_num == "6":
